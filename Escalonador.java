@@ -12,8 +12,22 @@ public class Escalonador{
 	{
 		inicializa();
 
-		while(prontos.size() > 0)
+		while(prontos.size() > 0 || bloqueados.size() > 0)
 		{
+			//Atualiza bloqueados
+			for(int i = 0; i < bloqueados.size(); i++)
+			{
+				int proximo = bloqueados.get(i);
+
+				if(tabelaDeProcessos[proximo].atualizaES() == Estado.Pronto)
+				{
+					bloqueados.remove(i);
+					prontos.add(proximo);
+					System.out.println("Processo "+ (proximo+1) + " desbloqueado.");
+				}
+			}
+
+			//Atualiza processo
 			int proximo = prontos.remove();
 			Estado saida = Estado.Pronto;
 			System.out.println("Processo "+ (proximo+1) + " executando.");
@@ -21,15 +35,20 @@ public class Escalonador{
 			{
 				saida = tabelaDeProcessos[proximo].roda();
 
-				if(saida == Estado.Fim)
+				if(saida == Estado.Fim || saida == Estado.Bloqueado)
 					break;
 			}
 
 			switch(saida)
 			{
-				case Pronto:
+				case Rodando:
 					System.out.println("Processo "+ (proximo+1) + " executou e nao terminou.");
+					tabelaDeProcessos[proximo].preempsao();
 					prontos.add(proximo);
+					break;
+				case Bloqueado:
+					System.out.println("Processo "+ (proximo+1) + " bloqueado.");
+					bloqueados.add(proximo);
 					break;
 
 				case Fim:
@@ -81,8 +100,8 @@ class BCP{
 	int y = 0;
 	LinkedList<String> comandos;
 
+	boolean terminouES = false;
 	int tempoDeEspera = 0;
-
 
 	//Inicializa bloco de controle de processo (carrega de arquivo)
 	BCP(String programa)
@@ -111,15 +130,52 @@ class BCP{
 		}
 	}
 
+	public Estado atualizaES()
+	{
+		if(tempoDeEspera > 0)
+		{
+			tempoDeEspera--;
+		}
+		else
+		{
+			terminouES = true;
+			estado = Estado.Pronto;
+		}
+
+		return estado;
+	}
+
 	public Estado roda()
 	{
-		String comando = comandos.remove();
+		estado = Estado.Rodando;
+		String comando = comandos.get(programCounter);
 		System.out.println(comando);
 
 		if(comando.equals("SAIDA"))
 		{
-			return Estado.Fim;
+			estado = Estado.Fim;
 		}
-		return Estado.Pronto;
+		if(comando.equals("E/S"))
+		{
+			if(terminouES)
+			{
+				terminouES = false;
+				estado = Estado.Pronto;
+			}
+			else
+			{
+				estado = Estado.Bloqueado;
+				tempoDeEspera = 2;
+				return estado;
+			}
+		}
+
+		programCounter++;
+		return estado;
+	}
+
+	public void preempsao()
+	{
+		estado = Estado.Pronto;
 	}
 }
