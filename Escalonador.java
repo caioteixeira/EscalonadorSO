@@ -26,9 +26,6 @@ public class Escalonador{
 			sc.close();
 			//System.out.println(quantum);
 			
-			
-			
-
 			//Inicializa Writers para log
 			String nomeDoArquivo = "log"+(quantum < 10?"0"+quantum:quantum)+ ".txt";
 			FileWriter writer = new FileWriter(nomeDoArquivo);
@@ -83,10 +80,20 @@ public class Escalonador{
 					}
 
 					//Soma num de intrucoes
-					numIntrucoes += i;
+					if(estadoSaida!=Estado.Bloqueado)
+					{
+						numIntrucoes += i;
+					}
+					else if(i > 0)
+					{
+						numIntrucoes += i; //Garante que instruções executadas antes da E/S sejam contadas
+					}
+
+					//Soma numero de quanta
+					numQuanta++;
 				}
 
-				numQuanta++;
+				
 
 				switch(estadoSaida)
 				{
@@ -129,7 +136,7 @@ public class Escalonador{
 
 			//Estatisticas finais
 			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
-			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/numQuanta));
+			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f", numIntrucoes/numQuanta));
 			saida.print("QUANTUM: " + quantum);
 
 			saida.close();
