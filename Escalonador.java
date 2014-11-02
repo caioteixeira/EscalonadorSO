@@ -45,25 +45,11 @@ public class Escalonador{
 			//ESCALONADOR
 			while(prontos.size() > 0 || bloqueados.size() > 0)
 			{
-				//Atualiza bloqueados
-				for(int i = 0; i < bloqueados.size(); i++)
-				{
-					int proximo = bloqueados.get(i);
-
-					if(tabelaDeProcessos[proximo].atualizaES() == Estado.Pronto)
-					{
-						bloqueados.remove(i);
-						prontos.add(proximo);
-						System.out.println("Processo "+ (proximo+1) + " desbloqueado.");
-						saida.println("E/S iniciada em " + tabelaDeProcessos[proximo].nome);
-					}
-				}
-
 				//Atualiza processo
-				int proximo = prontos.remove();
+				int proximo = -1;
+				proximo = prontos.remove();
 				Estado estadoSaida = Estado.Pronto;
 				saida.println("Executando "+tabelaDeProcessos[proximo].nome);
-				//System.out.println("Processo "+ (proximo+1) + " executando.");
 				for(int i = 0; i < quantum; i++)
 				{
 					estadoSaida = tabelaDeProcessos[proximo].roda();
@@ -83,20 +69,42 @@ public class Escalonador{
 				switch(estadoSaida)
 				{
 					case Rodando:
-						//System.out.println("Processo "+ (proximo+1) + " executou e nao terminou.");
+						
 						tabelaDeProcessos[proximo].preempsao();
 						prontos.add(proximo);
 						break;
 					case Bloqueado:
-						//System.out.println("Processo "+ (proximo+1) + " bloqueado.");
+					
 						bloqueados.add(proximo);
 						break;
 
 					case Fim:
-						//System.out.println("Processo "+(proximo+ 1) +" finalizado.");
+					
 						saida.println(tabelaDeProcessos[proximo].nome + " terminado. X="+tabelaDeProcessos[proximo].x + ". Y="+tabelaDeProcessos[proximo].y);
 						break;
 				}
+
+
+				//Atualiza bloqueados
+				for(int i = 0; i < bloqueados.size(); i++)
+				{
+					int bloqueado = bloqueados.get(i);
+					Estado estadoES = Estado.Bloqueado;
+
+					if(bloqueado != proximo)
+						estadoES = tabelaDeProcessos[bloqueado].atualizaES();
+					//saida.println(bloqueado);
+
+					if(estadoES == Estado.Pronto && bloqueado != proximo)
+					{
+						bloqueados.remove(i);
+						i--; //Garante que bloqueado removido nao quebre ordem de iteracao
+						prontos.add(bloqueado);
+						saida.println("E/S iniciada em " + tabelaDeProcessos[bloqueado].nome);
+
+					}
+				}
+
 			}
 
 			saida.close();
@@ -107,16 +115,6 @@ public class Escalonador{
 			e.printStackTrace();
 		}		
 
-	}
-
-	static void escalonador()
-	{
-		
-	}
-
-	static void inicializa()
-	{
-		
 	}
 }
 
@@ -169,11 +167,14 @@ class BCP{
 	public Estado atualizaES()
 	{
 		tempoDeEspera--;
+		//System.out.println(nome);
 		if(tempoDeEspera <= 0)
 		{
 			terminouES = true;
 			estado = Estado.Pronto;
 		}
+		else
+			estado = Estado.Bloqueado;
 
 		return estado;
 	}
@@ -182,7 +183,7 @@ class BCP{
 	{
 		estado = Estado.Rodando;
 		String comando = comandos.get(programCounter);
-		System.out.println(comando);
+		//System.out.println(comando);
 
 		if(comando.equals("SAIDA"))
 		{
