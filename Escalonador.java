@@ -13,6 +13,7 @@ public class Escalonador{
 	static int quantum = 0;
 	static float numTrocas = 0; //-1 para ignorar primeiro processo
 	static float numIntrucoes = 0;
+	static float numQuanta = 0;
 
 	public static void main(String[] args)
 	{
@@ -47,17 +48,18 @@ public class Escalonador{
 			//ESCALONADOR
 			while(prontos.size() > 0 || bloqueados.size() > 0)
 			{
-
-				
-
 				//Atualiza processo
 				int proximo = -1;
+
+				//Estado do processo apos ultima instrucao executada (antes da interrupcao)
 				Estado estadoSaida = Estado.Pronto;
 				if(prontos.size() > 0)
 				{
 					proximo = prontos.remove();
 					saida.println("Executando "+tabelaDeProcessos[proximo].nome);
 					int i;
+
+					//Executa instrucoes
 					for(i = 0; i < quantum; i++)
 					{
 						estadoSaida = tabelaDeProcessos[proximo].roda();
@@ -81,10 +83,10 @@ public class Escalonador{
 					}
 
 					//Soma num de intrucoes
-					numIntrucoes += i;	
+					numIntrucoes += i;
 				}
 
-				
+				numQuanta++;
 
 				switch(estadoSaida)
 				{
@@ -127,7 +129,7 @@ public class Escalonador{
 
 			//Estatisticas finais
 			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
-			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/(numTrocas +1)));
+			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/numQuanta));
 			saida.print("QUANTUM: " + quantum);
 
 			saida.close();
