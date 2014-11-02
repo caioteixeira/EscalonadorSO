@@ -50,30 +50,36 @@ public class Escalonador{
 
 				numTrocas++;
 
+
 				//Atualiza processo
 				int proximo = -1;
-				proximo = prontos.remove();
 				Estado estadoSaida = Estado.Pronto;
-				saida.println("Executando "+tabelaDeProcessos[proximo].nome);
-				int i;
-				for(i = 0; i < quantum; i++)
+				if(prontos.size() > 0)
 				{
-					estadoSaida = tabelaDeProcessos[proximo].roda();
-
-					if(estadoSaida == Estado.Fim)
+					proximo = prontos.remove();
+					saida.println("Executando "+tabelaDeProcessos[proximo].nome);
+					int i;
+					for(i = 0; i < quantum; i++)
 					{
-						break;
+						estadoSaida = tabelaDeProcessos[proximo].roda();
+
+						if(estadoSaida == Estado.Fim)
+						{
+							break;
+						}
+
+						if(estadoSaida == Estado.Bloqueado)
+						{
+							saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + i + (i>0?" intruções.":" instrução."));
+							break;
+						}
 					}
 
-					if(estadoSaida == Estado.Bloqueado)
-					{
-						saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + i + (i>0?" intruções.":" instrução."));
-						break;
-					}
+					//Soma num de intrucoes
+					numIntrucoes += i;	
 				}
 
-				//Soma num de intrucoes
-				numIntrucoes += i;
+				
 
 				switch(estadoSaida)
 				{
@@ -95,7 +101,7 @@ public class Escalonador{
 
 
 				//Atualiza bloqueados
-				for(i = 0; i < bloqueados.size(); i++)
+				for(int i = 0; i < bloqueados.size(); i++)
 				{
 					int bloqueado = bloqueados.get(i);
 					Estado estadoES = Estado.Bloqueado;
@@ -119,7 +125,7 @@ public class Escalonador{
 			//Estatisticas finais
 			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
 			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/numTrocas));
-			saida.println("QUANTUM: " + quantum);
+			saida.print("QUANTUM: " + quantum);
 
 			saida.close();
 			writer.close();
