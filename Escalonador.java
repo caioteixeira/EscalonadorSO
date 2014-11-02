@@ -56,8 +56,10 @@ public class Escalonador{
 					saida.println("Executando "+tabelaDeProcessos[proximo].nome);
 					int i;
 
+					boolean voltouDeBloqueio = tabelaDeProcessos[proximo].terminouES;
+
 					//Executa instrucoes
-					for(i = 0; i < quantum; i++)
+					for(i = 1; i <= quantum; i++)
 					{
 						estadoSaida = tabelaDeProcessos[proximo].roda();
 
@@ -73,20 +75,26 @@ public class Escalonador{
 							break;
 						}
 					}
+
+					if(i>=quantum) //Normaliza i para caso seja interrompido pelo escalonador
+						i--;
+
 					if(estadoSaida != Estado.Fim)
 					{
-						numTrocas++;
 						saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + i + (i>1?" intruções.":" instrução."));
 					}
+					numTrocas++;
 
 					//Soma num de intrucoes
-					if(estadoSaida!=Estado.Bloqueado)
+					if(!voltouDeBloqueio)
 					{
 						numIntrucoes += i;
+						//saida.println("Contou " + i);
 					}
-					else if(i > 0)
+					else if(i > 1)
 					{
-						numIntrucoes += i; //Garante que instruções executadas antes da E/S sejam contadas
+						//saida.println("Contou " + (i-1));
+						numIntrucoes += i-1; //Garante que instruções executadas depois da E/S sejam contadas
 					}
 
 					//Soma numero de quanta
@@ -122,7 +130,6 @@ public class Escalonador{
 
 					if(bloqueado != proximo)
 						estadoES = tabelaDeProcessos[bloqueado].atualizaES();
-					//saida.println(bloqueado);
 
 					if(estadoES == Estado.Pronto && bloqueado != proximo)
 					{
@@ -134,9 +141,12 @@ public class Escalonador{
 
 			}
 
+			//Garante que fim do último programa não seja contado
+			numTrocas--;
+
 			//Estatisticas finais
 			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
-			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f", numIntrucoes/numQuanta));
+			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f", numIntrucoes/numTrocas));
 			saida.print("QUANTUM: " + quantum);
 
 			saida.close();
@@ -146,7 +156,6 @@ public class Escalonador{
 		{
 			e.printStackTrace();
 		}		
-
 	}
 }
 
