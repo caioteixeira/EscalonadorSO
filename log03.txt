@@ -127,3 +127,6 @@ Executando TESTE-6
 TESTE-6 terminado. X=8. Y=5
 Executando TESTE-2
 TESTE-2 terminado. X=9. Y=1
+MEDIA DE TROCAS: 6,20
+MEDIA DE INSTRUCOES: 2,08
+QUANTUM: 3

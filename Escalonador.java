@@ -11,6 +11,8 @@ public class Escalonador{
 	static LinkedList<Integer> prontos = new LinkedList<Integer>();
 	static LinkedList<Integer> bloqueados = new LinkedList<Integer>();
 	static int quantum = 0;
+	static float numTrocas = -1; //-1 para ignorar primeiro processo
+	static float numIntrucoes = 0;
 
 	public static void main(String[] args)
 	{
@@ -45,12 +47,16 @@ public class Escalonador{
 			//ESCALONADOR
 			while(prontos.size() > 0 || bloqueados.size() > 0)
 			{
+
+				numTrocas++;
+
 				//Atualiza processo
 				int proximo = -1;
 				proximo = prontos.remove();
 				Estado estadoSaida = Estado.Pronto;
 				saida.println("Executando "+tabelaDeProcessos[proximo].nome);
-				for(int i = 0; i < quantum; i++)
+				int i;
+				for(i = 0; i < quantum; i++)
 				{
 					estadoSaida = tabelaDeProcessos[proximo].roda();
 
@@ -65,6 +71,9 @@ public class Escalonador{
 						break;
 					}
 				}
+
+				//Soma num de intrucoes
+				numIntrucoes += i;
 
 				switch(estadoSaida)
 				{
@@ -86,7 +95,7 @@ public class Escalonador{
 
 
 				//Atualiza bloqueados
-				for(int i = 0; i < bloqueados.size(); i++)
+				for(i = 0; i < bloqueados.size(); i++)
 				{
 					int bloqueado = bloqueados.get(i);
 					Estado estadoES = Estado.Bloqueado;
@@ -106,6 +115,11 @@ public class Escalonador{
 				}
 
 			}
+
+			//Estatisticas finais
+			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
+			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/numTrocas));
+			saida.println("QUANTUM: " + quantum);
 
 			saida.close();
 			writer.close();
