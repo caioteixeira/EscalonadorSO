@@ -11,7 +11,7 @@ public class Escalonador{
 	static LinkedList<Integer> prontos = new LinkedList<Integer>();
 	static LinkedList<Integer> bloqueados = new LinkedList<Integer>();
 	static int quantum = 0;
-	static float numTrocas = -1; //-1 para ignorar primeiro processo
+	static float numTrocas = 0; //-1 para ignorar primeiro processo
 	static float numIntrucoes = 0;
 
 	public static void main(String[] args)
@@ -48,8 +48,7 @@ public class Escalonador{
 			while(prontos.size() > 0 || bloqueados.size() > 0)
 			{
 
-				numTrocas++;
-
+				
 
 				//Atualiza processo
 				int proximo = -1;
@@ -70,9 +69,15 @@ public class Escalonador{
 
 						if(estadoSaida == Estado.Bloqueado)
 						{
-							saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + i + (i>0?" intruções.":" instrução."));
+							saida.println("E/S iniciada em " + tabelaDeProcessos[proximo].nome);
+							//saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + (i+1) + (i>1?" intruções.":" instrução."));
 							break;
 						}
+					}
+					if(estadoSaida != Estado.Fim)
+					{
+						numTrocas++;
+						saida.println("Interrompendo "+ tabelaDeProcessos[proximo].nome + " após " + i + (i>1?" intruções.":" instrução."));
 					}
 
 					//Soma num de intrucoes
@@ -115,8 +120,6 @@ public class Escalonador{
 						bloqueados.remove(i);
 						i--; //Garante que bloqueado removido nao quebre ordem de iteracao
 						prontos.add(bloqueado);
-						saida.println("E/S iniciada em " + tabelaDeProcessos[bloqueado].nome);
-
 					}
 				}
 
@@ -124,7 +127,7 @@ public class Escalonador{
 
 			//Estatisticas finais
 			saida.println("MEDIA DE TROCAS: " + String.format("%.2f", numTrocas/10));
-			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/numTrocas));
+			saida.println("MEDIA DE INSTRUCOES: " + String.format("%.2f",numIntrucoes/(numTrocas +1)));
 			saida.print("QUANTUM: " + quantum);
 
 			saida.close();
@@ -154,7 +157,7 @@ class BCP{
 	String y = "0";
 	LinkedList<String> comandos;
 
-	boolean terminouES = false;
+	public boolean terminouES = false;
 	int tempoDeEspera = 0;
 
 	//Inicializa bloco de controle de processo (carrega de arquivo)
